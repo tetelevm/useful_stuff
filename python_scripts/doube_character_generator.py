@@ -19,7 +19,7 @@ from pathlib import Path
 
 PATH_TO_TEXT = '/home/t/folder_with_text/'
 CHARS_LEN = 2
-WORD_COUNT = 30
+WORD_COUNT = 100
 
 
 class Generator:
@@ -41,7 +41,7 @@ class Generator:
             raise ValueError(f'{path} is not file or dir!')
 
         text = '\n'.join(
-            open(file).read()
+            open(file, encoding="utf8").read()
             for file in paths_to_text
         )
         text = text.replace('\n', ' ')
