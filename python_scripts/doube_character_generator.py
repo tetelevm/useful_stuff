@@ -47,7 +47,7 @@ class Generator:
         text = text.replace('\n', ' ')
 
         # removing unnecessary characters
-        text = re.sub(r'[^А-Яа-я\s]', '', text)
+        text = re.sub(r'[^А-Яа-я\s,.]', '', text)
         text = re.sub(r'\s+', ' ', text)
         text = text.lower().rstrip().lstrip()
 
