@@ -18,8 +18,8 @@ from pathlib import Path
 
 
 PATH_TO_TEXT = '/home/t/folder_with_text/'
-CHARS_LEN = 2
-WORD_COUNT = 100
+CHARS_LEN = 1
+WORD_COUNT = 500
 
 
 class Generator:
