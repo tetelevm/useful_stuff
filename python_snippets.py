@@ -51,7 +51,7 @@ import os
 
 def get_all_files_from_folder(path):
     all_files = list()
-    for (folder, _, files) in os.walk('/home/t/OrdeRPG'):
+    for (folder, _, files) in os.walk(path):
         for file in files:
             all_files.append(f'{folder}/{file}')
     return all_files
