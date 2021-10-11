@@ -1,108 +1,157 @@
+"""
+Another bicycle for generating tables.
+
+Another one, but my own.
+"""
+
+
+class Cell:
+    def __init__(self, data: str):
+        strip = lambda val: val.replace('\t', ' ').rstrip().lstrip()
+        content = str(data).splitlines()
+        content = content or ['']
+        content = list(map(strip, content))
+
+        self.content = content
+        self.height = len(content)
+        self.width = max(len(s) for s in content)
+
+    def as_size(self, width: int, height: int) -> list[str]:
+        def sequence_to_size(sequence, size, null):
+            length = len(sequence)
+            last = (size - length) // 2
+            first = last + (size - length) % 2
+            return null * first + sequence + null * last
+
+        content = sequence_to_size(self.content, height, [''])
+        content = [sequence_to_size(line, width, ' ') for line in content]
+        return content
+
+
 class TableGenerator:
-    class _Cell:
-        content = []
-        width = 0
-        heigth = 0  
-        def __init__(self, content):
-            content = str(content).split('\n')
-            content = [s.replace('\t', ' ') for s in content]
-            content = [s.rstrip().lstrip() for s in content]
-            self.content = content
-            self.heigth = len(content)
-            self.width = max(len(s) for s in self.content)
-
-        def to_heigth(self, heigth):
-            last = (heigth - self.heigth) // 2
-            first = last + (heigth - self.heigth) % 2
-            return [''] * first + self.content + [''] * last
-
-        @staticmethod
-        def to_width(text, width):
-            last = (width - len(text)) // 2
-            first = last + (width - len(text)) % 2
-            return ' ' * first + text + ' ' * last
-
-    table = []
-    widths = []
-    spliter = ''
-    str_table = ''
-
     def __init__(
-        self,
-        body:list = list(),
-        header:list = None,
-        params:list = None,
+            self,
+            body: list[list],
+            header: list = None,
+            params: list = None,
     ):
-        if header is None:
-            header = body[0]
-            body = body[1:]
+        self.table = self.generate_table(body, header, params)
 
-        if params is None:
-            params = [string[0] for string in body]
-            body = [string[1:] for string in body]
+        self.widths: list[int]
+        self.heights: list[int]
+        self.row_separator: str
+        self.cell_separator: list[str]
+        self.calculate_sizes()
 
-        if len(header) == len(body[-1]):
-            header = [''] + header
+    @staticmethod
+    def generate_table(body, header, params) -> list[list]:
+        table = body  # size M x N -> [ [ val x N ] x M ]
 
-        table = [header] + [
-            [par] + string for (par, string) in zip(params, body)
+        if params:
+            table = [[par] + row for (par, row) in zip(params, table)]
+
+        if header:
+            if table and len(header) == len(table[-1]) - 1:
+                header = [''] + header
+            table = [header] + table
+
+        m = len(table)
+        if m == 0:
+            raise ValueError('No data - table is empty!')
+        n = len(table[0])
+        is_same_length = all(len(row) == n for row in table)
+        if not is_same_length:
+            raise ValueError('Rows of the table have different lengths!')
+
+        table = [
+            [Cell(cell) for cell in row]
+            for row in table
         ]
 
-        self.table = [
-            [self._Cell(content) for content in string]
-            for string in table
-        ]
+        return table
+
+    def calculate_sizes(self) -> None:
         self.widths = [
-            max(cell.width for cell in column)
+            max(cell.width for cell in column) + 2  # 2 - for margins
             for column in zip(*self.table)
         ]
-        self.spliter = '+' + '+'.join('-' * (w + 2) for w in self.widths) + '+'
-        self.spliter += '\n'
+        self.heights = [
+            max(cell.height for cell in row)
+            for row in self.table
+        ]
+        cell_separators = ['-' * width for width in self.widths]
+        self.row_separator = '+'.join([''] + cell_separators + [''])
+        self.cell_separator = ['|'] * (len(self.widths) + 1)
 
-    def _generate_string(self, string: list, mark_params:bool = False) -> str:
-        heigth = max(cell.heigth for cell in string)
-        string = [cell.to_heigth(heigth) for cell in string]
-        string = list(zip(*string))
+    def generate(
+            self,
+            mark_header: bool = True,
+            mark_params: bool = False
+    ) -> str:
+        assert self.table, 'No data - table is empty!'
 
-        s = ''
-        for one_text_string in string:
-            s += '|'
-            for index, (text, width) in enumerate(zip(one_text_string, self.widths)):
-                s += ' '
-                s += self._Cell.to_width(text, width)
-                s += ' |' 
-                if index == 0 and mark_params:
-                    s += '|'
-            s += '\n'
-        return s
+        def generate_row_strings(row: list[Cell], height) -> list[str]:
+            list_cells = [
+                cell.as_size(width, height)
+                for (cell, width) in zip(row, self.widths)
+            ]
 
-    def generate(self, mark_header:bool = True, mark_params:bool = False) -> str:
-        spliter = self.spliter
+            join_string = lambda one_line_strings: cell_separator[0] + ''.join(
+                string + sep
+                for (string, sep) in zip(one_line_strings, cell_separator[1:])
+            )
+            list_strings = [
+                join_string(one_line_strings)
+                for one_line_strings in zip(*list_cells)
+            ]
+
+            return list_strings
+
+        # create data for generate
+        table = self.table
+        cell_separator = self.cell_separator.copy()
+        row_separator = self.row_separator
+        header_row_separator = row_separator
         if mark_params:
-            second_plus_index = spliter[1:].index('+') + 1
-            spliter = spliter[:second_plus_index] + '+' + spliter[second_plus_index:]
+            cell_separator[0], cell_separator[1] = '||', '||'
+            second_plus_index = row_separator[1:].index('+') + 1
+            row_separator = (
+                '+'
+                + row_separator[:second_plus_index]
+                + '+'
+                + row_separator[second_plus_index:]
+            )
+            header_row_separator = row_separator
+        if mark_header:
+            header_row_separator = header_row_separator.replace('-', '=')
 
-        self.str_table = spliter
-        for (index, string) in enumerate(self.table):
-            if index == 0 and mark_header:
-                double_spliter = spliter.replace('-', '=')
-                self.str_table = double_spliter
-                self.str_table += self._generate_string(string, mark_params)
-                self.str_table += double_spliter
-                continue
-            self.str_table += self._generate_string(string, mark_params)
-            self.str_table += spliter
+        # add header row
+        table_strings: list[str] = (
+            [header_row_separator]
+            + generate_row_strings(table[0], self.heights[0])
+            + [header_row_separator]
+        )
 
-        return self.str_table 
+        # generate  rest of table
+        for (row, height) in zip(table[1:], self.heights[1:]):
+            table_strings += generate_row_strings(row, height)
+            table_strings += [row_separator]
+
+        str_table = '\n'.join(table_strings)
+        return str_table
 
 
 if __name__ == '__main__':
-    header = ['Name', 'Price (discount)', 'Description', 'Is Good']
+    header = ['Price / discount', 'Description', 'Is good']
     table = [
         [
             'watermelon',
             '$100 \n 5%',
-            'This is a very long \n description, it describes \n a watermelon',
+            (
+                'This is a very long \n'
+                'description, it describes \n'
+                'a watermelon'
+            ),
             'Yes',
         ],
         [
@@ -114,7 +163,13 @@ if __name__ == '__main__':
         [
             'apricot',
             '$65',
-            'Apricots are divided by 2, \n and then by 2 more, \n and then by 2 more, \n and then by 2 more, \n ...', 
+            (
+                'Apricots are divided by 2, \n'
+                'and then by 2 more, \n'
+                'and then by 2 more, \n'
+                'and then by 2 more, \n'
+                '...'
+            ),
             'Yes',
         ],
         [
