@@ -1,3 +1,9 @@
+"""
+Music Library Editor.
+Needs detailed DOCSTRING and comments to the code, as it is strictly
+dependent on the library structure.
+"""
+
 import os
 from pathlib import Path
 import shutil
@@ -9,9 +15,19 @@ FROM_FOLDER = 'music11'
 TO_FOLDER = 'music'
 
 
+def do_input(description='', args=('y', 'n')):
+    msg = description + ' (<' + '>/<'.join(args) + '>): '
+    answer = None
+    while answer not in args:
+        if answer is not None:
+            print('unexpected input!')
+        answer = input(msg)
+    return answer
+
+
 def set_or_log(audio, attr, value, path):
     def do_set():
-        print(f'{path} ({attr}) >>> {old_val}  |||  {value}')
+        print(f'<{attr}>| {path} >>> {old_val}  |||  {value}')
         do = ''
         if attr == 'tracknumber':
             flag = False
@@ -22,8 +38,9 @@ def set_or_log(audio, attr, value, path):
 
             do = 'y' if flag else do
 
-        while do not in ['y', 'n']:
-            do = input('do set (y/n): ')
+        if not do:
+            do = do_input('do set')
+
         if do == 'y':
             print('YES set')
             audio[attr] = value
@@ -185,20 +202,20 @@ class MusicMerger:
         return False
 
     def _print_all(self):
-        d = {
-            'artists to move': self.artist_to_move,
-            'album to move': self.albums_to_move,
-            'song to move': self.songs_to_move,
-            'not artist': self.not_artists,
-            'not album': self.not_albums,
-            'default excesses': self.default_excesses,
-            'smth excesses': self.not_songs,
+        outliers = {
+            f'artists to move from {self.from_}': self.artist_to_move,
+            f'album to move from {self.from_}': self.albums_to_move,
+            f'song to move from {self.from_}': self.songs_to_move,
+            f'not artist in {self.from_}': self.not_artists,
+            f'not album in {self.from_}': self.not_albums,
+            f'default excesses in {self.from_}': self.default_excesses,
+            f'smth excesses in {self.from_}': self.not_songs,
         }
-        for (str_, list_) in d.items():
+        for (str_, list_) in outliers.items():
             if list_:
                 print()
                 print(str_)
-                for smth in list_:
+                for smth in sorted(list_):
                     print(f'\t{smth}')
 
     def _remove_files(self, files):
@@ -250,7 +267,10 @@ class MusicMerger:
 if __name__ == '__main__':
     merger = MusicMerger(from_=FROM_FOLDER, to=TO_FOLDER)
     merger.create_differents()
-    merger.move_all()
-    len(merger.all_songs)
-    merger.check_meta()
-    print('All files checked!')
+    if do_input('move files?') == 'y':
+        merger.move_all()
+        if do_input('check meta?') == 'y':
+            merger.check_meta()
+            print('All files checked!')
+    else:
+        print('Exit')

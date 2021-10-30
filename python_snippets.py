@@ -58,3 +58,13 @@ def get_all_files_from_folder(path):
 
 
 # ======== =============================================================
+
+
+def do_input(description='', args=('y', 'n')):
+    msg = description + ' (<' + '>/<'.join(args) + '>): '
+    answer = None
+    while answer not in args:
+        if answer is not None:
+            print('unexpected input!')
+        answer = input(msg)
+    return answer
