@@ -10,8 +10,8 @@ import shutil
 import mutagen
 
 
-PARENT_FOLDER = '/mnt/hard/'
-FROM_FOLDER = 'music11'
+PARENT_FOLDER = '/home/t/'
+FROM_FOLDER = 'null'
 TO_FOLDER = 'music'
 
 
