@@ -1,6 +1,8 @@
 """
 Snippets of code that are sometimes needed, but not too big for a
 separate file.
+
+TODO: it needs to be documenting
 """
 
 
@@ -49,6 +51,7 @@ class ExceptionFromFormattedDoc(ExceptionFromDoc):
 
 import os
 
+
 def get_all_files_from_folder(path):
     all_files = list()
     for (folder, _, files) in os.walk(path):
@@ -68,3 +71,23 @@ def do_input(description='', args=('y', 'n')):
             print('unexpected input!')
         answer = input(msg)
     return answer
+
+
+# ======== =============================================================
+
+
+def child_classes(locals_, parent_class):
+    def _is_subclass(cls):
+        return (
+                isinstance(cls, type)  # is class
+                and issubclass(cls, parent_class)  # is subclass
+                and cls != parent_class  # not parent class
+        )
+    return [
+        name
+        for (name, cls) in locals_.items()
+        if _is_subclass(cls)
+    ]
+
+
+# ======== =============================================================
