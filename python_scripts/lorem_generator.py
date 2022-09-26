@@ -1,3 +1,5 @@
+# !! An updated and improved version is in `lorem_text_bot` project
+
 """
 Pseudoword generator using books/text.
 Requires prefetched data.
@@ -25,7 +27,7 @@ CHARS_LEN = 3
 WORD_COUNT = 500
 
 LETTERS = r'А-Яа-яЁё'  # now only for russian language
-END_SENTENCE_MARKS = r'\.'
+END_SENTENCE_MARKS = r'.'
 OTHER_MARKS = r','
 PUNCTUATION_MARKS = END_SENTENCE_MARKS + OTHER_MARKS
 
