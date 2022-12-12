@@ -1,3 +1,4 @@
-# random_scripts
+# useful_stuff
 
-These are really my random scripts
+Files, scripts and other things I need for personal use. In essence, the project
+is a kind of storage and sharing of different files.
