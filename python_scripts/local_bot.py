@@ -15,7 +15,7 @@ from telegram.ext.filters import ChatType, TEXT
 
 def parse_envs() -> dict:
     try:
-        with open(Path(__file__) / ".envs", "r") as file:
+        with open(Path(__file__).parent / ".envs", "r") as file:
             text = file.readlines()
     except FileNotFoundError:
         raise ValueError("Requires the settings file `.envs`")
@@ -31,7 +31,7 @@ async def echo(update, context):
     print("there!")
     await update.effective_chat.send_message(
         update.message.text,
-        parse_mode=ParseMode.HTML
+        parse_mode=ParseMode.MARKDOWN_V2
     )
 
 
